@@ -127,7 +127,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
     BASE_DIR / 'posts' / 'static',
-    BASE_DIR / 'pofiles' / 'static',
+    BASE_DIR / 'profiles' / 'static',
 ]
 
 MEDIA_URL = '/media/'
