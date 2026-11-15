@@ -32,7 +32,10 @@ def post_list_and_create(request):
 
 @login_required
 def post_detail(request, pk):
-    obj = Post.objects.get(pk=pk)
+    try:
+        obj = Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        return redirect('posts:main-board')
     form = PostForm()
 
     context = {
