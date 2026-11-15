@@ -3,8 +3,11 @@ from .models import Post, Photo
 from django.http import JsonResponse, HttpResponse
 from .forms import PostForm
 from profiles.models import Profile
+from .utils import action_permission
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
+@login_required
 def post_list_and_create(request):
     form = PostForm(request.POST or None)
     """ qs = Post.objects.all() """
@@ -27,7 +30,7 @@ def post_list_and_create(request):
     }
     return render(request, 'posts/main.html', context)
 
-
+@login_required
 def post_detail(request, pk):
     obj = Post.objects.get(pk=pk)
     form = PostForm()
@@ -39,6 +42,7 @@ def post_detail(request, pk):
 
     return render(request, 'posts/detail.html', context)
 
+@login_required
 def load_post_data_view(request, num_posts):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         visible = 3
@@ -60,6 +64,7 @@ def load_post_data_view(request, num_posts):
             data.append(item)
         return JsonResponse({'data':data[lower:upper], 'size': size})
 
+@login_required
 def post_detail_data_view(request, pk):
     obj = Post.objects.get(pk=pk)
     data = {
@@ -71,6 +76,7 @@ def post_detail_data_view(request, pk):
     }
     return JsonResponse({'data': data})
 
+@login_required
 def like_unlike_post(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         pk = request.POST.get('pk')
@@ -82,7 +88,9 @@ def like_unlike_post(request):
             liked = True
             obj.liked.add(request.user)
         return JsonResponse({'liked': liked, 'count': obj.like_count})
-            
+
+@login_required
+@action_permission
 def update_post(request, pk):
     obj = Post.objects.get(pk=pk)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -96,11 +104,14 @@ def update_post(request, pk):
             'body': new_body,
         })
 
+@login_required
+@action_permission
 def delete_post(request, pk):
     obj = Post.objects.get(pk=pk)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         obj.delete()
-    return JsonResponse({})
+        return JsonResponse({'msg': 'some message'})
+    return JsonResponse({'msg': 'access denied - ajax only'})
 
 def image_upload_view(request):
     # print(request.FILES)
