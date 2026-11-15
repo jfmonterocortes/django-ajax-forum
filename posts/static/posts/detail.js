@@ -19,6 +19,8 @@ const bodyInput = document.getElementById('id_body')
 
 const csrf = document.getElementsByName('csrfmiddlewaretoken')
 
+const postId = window.location.pathname.split('/')[1]
+
 backBtn.addEventListener('click', () => {
     history.back()
 })
@@ -81,6 +83,7 @@ updateForm.addEventListener('submit', e => {
             handleAlerts('success', 'post has been updated')
             title.textContent = response.title
             body.textContent = response.body
+            window.location.reload()
         },
         error: function (error) {
             console.log(error)
@@ -106,3 +109,38 @@ deleteForm.addEventListener('submit', e => {
         },
     })
 })
+
+Dropzone.autoDiscover = false
+const dropzone = document.getElementById('my-dropzone')
+if (dropzone) {
+    const photosCount = parseInt(dropzone.getAttribute('data-photos'))
+    const maxPhotos = parseInt(dropzone.getAttribute('data-max-photos'))
+    let photosAdded = false
+    const myDropzone = new Dropzone('#my-dropzone', {
+        url: '/upload/',
+        init: function () {
+            this.on('sending', function (file, xhr, formData) {
+                formData.append('csrfmiddlewaretoken', csrf[0].value)
+                formData.append('new_post_id', postId)
+            })
+            this.on('success', function () {
+                photosAdded = true
+            })
+            this.on('maxfilesexceeded', function (file) {
+                this.removeFile(file)
+                handleAlerts('danger', `a post can have max ${maxPhotos} photos in total`)
+            })
+        },
+        maxFiles: maxPhotos - photosCount,
+        parallelUploads: 1,
+        maxFilesize: 4,
+        acceptedFiles: '.png, .jpg, .jpeg'
+    })
+
+    // reload when the update window is closed, so the carousel shows the new photos
+    document.getElementById('updateModal').addEventListener('hidden.bs.modal', () => {
+        if (photosAdded) {
+            window.location.reload()
+        }
+    })
+}

@@ -29,7 +29,8 @@ posts
                         </div>
 
                     </form>
-                    <form action="upload/" id="my-dropzone" class="dropzone dz not-visible">
+                    <div id="modal-alert-box"></div>
+                    <form action="upload/" id="my-dropzone" class="dropzone dz not-visible" data-max-photos="{{max_photos}}">
                         {% csrf_token %}
                         <div class="fallback">
                             <input name="file" type="file" multiple />

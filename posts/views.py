@@ -5,6 +5,7 @@ from .forms import PostForm
 from profiles.models import Profile
 from .utils import action_permission
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 # Create your views here.
 
 @login_required
@@ -27,6 +28,7 @@ def post_list_and_create(request):
 
     context = {
         'form': form,
+        'max_photos': settings.MAX_PHOTOS,
     }
     return render(request, 'posts/main.html', context)
 
@@ -41,6 +43,7 @@ def post_detail(request, pk):
     context = {
         'obj': obj,
         'form': form,
+        'max_photos': settings.MAX_PHOTOS,
     }
 
     return render(request, 'posts/detail.html', context)
@@ -119,11 +122,16 @@ def delete_post(request, pk):
         return JsonResponse({'msg': 'some message'})
     return redirect('posts:main-board')
 
+@login_required
 def image_upload_view(request):
     # print(request.FILES)
     if request.method == 'POST':
         img = request.FILES.get('file')
         new_post_id = request.POST.get('new_post_id')
         post = Post.objects.get(id=new_post_id)
+        if request.user != post.author.user:
+            return HttpResponse('only the author can add photos', status=403)
+        if post.photo_set.all().count() >= settings.MAX_PHOTOS:
+            return HttpResponse(f'a post can have max {settings.MAX_PHOTOS} photos', status=400)
         Photo.objects.create(image=img, post=post)
     return HttpResponse()

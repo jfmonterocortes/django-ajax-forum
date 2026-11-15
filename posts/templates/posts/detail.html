@@ -31,6 +31,17 @@
                         </div>
 
                     </form>
+                    {% if obj.get_photos.count < max_photos %}
+                        <p class="mt-2 mb-1">Add photos ({{obj.get_photos.count}}/{{max_photos}})</p>
+                        <form action="/upload/" id="my-dropzone" class="dropzone dz" data-photos="{{obj.get_photos.count}}" data-max-photos="{{max_photos}}">
+                            {% csrf_token %}
+                            <div class="fallback">
+                                <input name="file" type="file" multiple />
+                            </div>
+                        </form>
+                    {% else %}
+                        <p class="mt-2 mb-1">This post already has {{max_photos}} photos</p>
+                    {% endif %}
                 </div>
                 
             </div>

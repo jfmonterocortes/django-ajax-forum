@@ -13,6 +13,7 @@ const csrf = document.getElementsByName('csrfmiddlewaretoken')
 const url = window.location.href
 
 const alertBox = document.getElementById('alert-box')
+const modalAlertBox = document.getElementById('modal-alert-box')
 
 const dropozone = document.getElementById('my-dropzone')
 const addBtn = document.getElementById('add-btn')
@@ -190,9 +191,11 @@ closeBtns.forEach(btn => btn.addEventListener('click', () => {
     }
     const myDropzone = Dropzone.forElement('#my-dropzone')
     myDropzone.removeAllFiles(true)
+    modalAlertBox.innerHTML = ''
 }))
 
 Dropzone.autoDiscover = false
+const maxPhotos = parseInt(dropozone.getAttribute('data-max-photos'))
 const myDropzone = new Dropzone('#my-dropzone', {
     url: 'upload/',
     init: function () {
@@ -200,8 +203,17 @@ const myDropzone = new Dropzone('#my-dropzone', {
             formData.append('csrfmiddlewaretoken', csrftoken)
             formData.append('new_post_id', newPostId)
         })
+        this.on('maxfilesexceeded', function (file) {
+            this.removeFile(file)
+            modalAlertBox.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    a post can have max ${maxPhotos} photos in total
+                </div>
+            `
+        })
     },
-    maxFiles: 3,
+    maxFiles: maxPhotos,
+    parallelUploads: 1,
     maxFilesize: 4,
     acceptedFiles: '.png, .jpg, .jpeg'
 })
